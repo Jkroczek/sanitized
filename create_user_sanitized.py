@@ -3,17 +3,15 @@
 # Usage: create_user.py <username> <password> <email>
 #
 # Created by jkroczek 3/22/19
-# Updated by jkroczek 7/30/19
+# Updated by jkroczek 8/2/19
 
-# Libraries
 import sys
 import ldap3
-
-# Modules
 import re
 import getpass
+from passlib.hash import ldap_md5_crypt
 
-#Email format function
+# Email format function
 def isValidEmail(email):
     if len(email) > 7:
         if re.match(r"^.+@(\[?)[a-zA-Z0-9-.]+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$", email) != None:
@@ -36,17 +34,21 @@ if not ldap_email:
     print('Email is empty!')
     sys.exit()
 
-#checks if email is in a valid format
+# Checks if email is in a valid format
 if isValidEmail(ldap_email) == False:
     print('Not a valid email')
     sys.exit()
 
-#display summary on screen
+# hashing password with md5_crypt
+# hash will be similar to '{CRYPT}$1$wa6OLvW3$uzcIj2Puf3GcFDf2KztQN0'
+ldap_userpass_hash = ldap_md5_crypt.encrypt(ldap_userpass)
+
+# Display summary on screen
 print('Username: ' + ldap_username)
 print('Password: ' + ldap_userpass)
 print('Email: ' + ldap_email)
 
-#prompt for LDAP admin password. Using getpass.getpass so it doesn't echo
+# Prompt for LDAP admin password. Using getpass.getpass so it doesn't echo
 ldap_adminpass = getpass.getpass('Enter LDAP admin password: ')
 
 # LDAP server connection
@@ -69,7 +71,7 @@ new_list.sort(key=float) # Since the list is strings, this sorts them by float, 
 new_list.remove('9999') # Removes the 9999 uidNumber
 new_uid = int(new_list[-1]) + 1 # Takes the last entry in the list, and adds 1 to it, defining the next available uidNumber as new_uid
 
-#Add the group
+# Add the group
 groupcn = 'cn=' + ldap_username + ',ou=groups,dc=companyname,dc=com'
 connection.add(groupcn, ['posixGroup', 'top'], {'gidNumber': new_uid})
 print(connection.result)
@@ -90,7 +92,7 @@ connection.add(usercn, [
                         'gidNumber': new_uid,
                         'homeDirectory': '/home/' + ldap_username,
                         'loginShell': '/bin/bash',
-                        'userPassword': ldap_userpass,
+                        'userPassword': ldap_userpass_hash,
                         'shadowLastChange': 99999, 
                         'shadowMax': 0, 
                         'shadowWarning': 0, 
