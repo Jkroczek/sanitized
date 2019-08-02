@@ -1,15 +1,14 @@
 #!/usr/bin/python3
 # Script to create a new user in OpenLDAP
-# Usage: create_user.py <username> <password> <email>
 #
 # Created by jkroczek 3/22/19
 # Updated by jkroczek 8/2/19
 
-import sys
-import ldap3
-import re
-import getpass
-from passlib.hash import ldap_md5_crypt
+import sys                                  # used for sys.exit() to exit the script when checking for input errors
+import ldap3                                # the meat and potatoes
+import re                                   # for regex
+import getpass                              # getpass.getpass provides a typical password prompt that hides the characters you type
+from passlib.hash import ldap_md5_crypt     # hashes the passwords using md5_crypt
 
 # Email format function
 def isValidEmail(email):
